@@ -1,9 +1,62 @@
-const endPoint = "http://localhost:3000/api/v1/users"
+const endPoint = "http://localhost:3000/api/v1/"
 const KEY = "AIzaSyDhOR4z5ZCpdPtCAgZy-P3_T3B6DZ_FLCc"
 const youtubeApiUrl = "https://www.googleapis.com/youtube/v3/commentThreads?"
 allVids = []
 results = {}
-  const youTubeSearchUrl = "https://www.googleapis.com/youtube/v3/search/?"
+allApiVids = []
+allApiUsers = []
+currentVid = ""
+currentUser = ""
+
+const youTubeSearchUrl = "https://www.googleapis.com/youtube/v3/search/?"
+
+document.addEventListener("DOMContentLoaded",()=>{
+  getUsers()
+  document.querySelector("#searchForm").style.display = "none"
+// debugger
+  validateOrCreateUser()
+    // document.querySelector("#submit-but").lastElementChild.value = "Log In"
+    // document.querySelector(//get form)
+
+  getVidsfromDatabase()
+  searchEventListener()
+  readyToAnalyze()
+})
+
+function validateOrCreateUser(){
+  document.querySelector("#userForm").addEventListener("submit",(e)=>{
+    e.preventDefault()
+
+    let username = document.querySelector("#userIn").value
+
+    allApiUsers.forEach((user)=>{
+      if (user.name === username){
+        // debugger
+        currentUser = user
+        // debugger
+      }
+
+    })
+
+    if (currentUser.name !== username){postUser({name: username}); currentUser = allApiUsers.slice(-1)[0]}
+
+    document.querySelector("#userForm").reset()
+    document.querySelector("#userForm").style.display = "none"
+    document.querySelector("#searchForm").style.display = "block"
+
+  })
+
+}
+
+function getVidsfromDatabase(){
+  fetch(endPoint+"videos")
+    .then(res => res.json())
+    .then(vids => {
+        allApiVids = vids
+    })
+
+}
+
 
   function searchVids(searchParams){
     fetch(`${youTubeSearchUrl}${searchParams}`)
@@ -36,22 +89,59 @@ function displayVids(data){
       newVid.append(anButton)
       document.querySelector("#results").append(newVid)
     })
-    readyToAnalyze()
+    // readyToAnalyze()
 }
 
-function readyToAnalyze(){
+function vidAlreadyAnalyzed(vid){
+  let check = false
+  allApiVids.forEach((apiVid) => {
+    if (vid.id.videoId === apiVid["youtubeId"]){ check = true; currentVid = apiVid}
+  })
+  return check
+}
 
-    addEventListener("click", (e)=>{
+async function readyToAnalyze(){
+
+    document.addEventListener("click", (e)=>{
 
     if (e.target.classList[0] === "analyze-button"){
     vidId = e.target.parentElement.id
     allVids.forEach(async (vid)=>{
       // debugger
+      let analysis = ""
+
       if (vidId === vid.id.videoId && e.target.parentElement.lastChild.id !== "analysis"){
+
+        if (!vidAlreadyAnalyzed(vid)){
+
         analysis = await youtubeComments(vid)
         // debugger
-        attachAnalysis(e,analysis)
+        // attachAnalysis(e,analysis)
+        let vidToPost = {}
+        vidToPost.typee = analysis.type
         // debugger
+        vidToPost.ratio = analysis.ratio
+        vidToPost.score = analysis.score
+        vidToPost.keywords = analysis.keywords.map((obj)=>{return obj["word"]}).join(",")
+        vidToPost.youtubeId = vid.id.videoId
+        vidToPost.title = vid.snippet.title
+        console.log(vidToPost)
+        await postVideo(vidToPost)
+        getVidsfromDatabase()
+        // attachAnalysis(e,analysis)
+      }
+      else{
+        analysis = {type: currentVid.typee,ratio: currentVid.ratio }
+        // debugger
+
+      }
+      // attachAnalysis(e,analysis)
+        // debugger
+        if(!e.target.parentElement.querySelector(".analysis")){
+          // debugger
+        attachAnalysis(e,analysis)
+      }
+
       }
     })
   }
@@ -60,27 +150,19 @@ function readyToAnalyze(){
 
 function attachAnalysis(e,analysis){
   let an = document.createElement('span')
-  an.id = "analysis"
-  an.innerHTML = `<h4>RATING: ${analysis.type}</h4>
+  an.className = "analysis"
+  an.innerHTML = `<h4>RATING: ${analysis.type }</h4>
                   <h4>RATING PERCENT: ${(analysis.ratio*100).toFixed(2)}%</h4>`
   e.target.parentElement.append(an)
+  let addToPlaylistButton = document.createElement("button")
+  addToPlaylistButton.innerText = "Add to My Playlist"
+  addToPlaylistButton.className = "Add-to-playlist"
+  e.target.parentElement.append(addToPlaylistButton)
 
-}
-
-function getUsers(){
-  fetch(endPoint)
-    .then(res => res.json())
-    .then(data => console.log(data))
-}
-
-function postUser(){
-  fetch(endPoint,{
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({name: "Second_User"})
-  })
-    // .then(res => res.json())
-    // .then(data => console.log(data))
+  let removeToPlaylistButton = document.createElement("button")
+  removeToPlaylistButton.innerText = "Remove from My Playlist"
+  removeToPlaylistButton.className = "Remove-from-playlist"
+  e.target.parentElement.append(removeToPlaylistButton)
 }
 
 
@@ -117,6 +199,7 @@ function youtubeComments(vidToAnalyze){
       //           //console.log(wordCount)
       // allWords = allWords.join(" ")
       // debugger
+
       return await analyze(allWords)
 
       // console.log(analysis)
@@ -127,6 +210,7 @@ function youtubeComments(vidToAnalyze){
     // })
 
 }
+
 
 function wordCount(allWords){
   let words = {}
@@ -181,9 +265,7 @@ function analyze(words){
     })
 }
 
-
-//youtubeComments()
-// searchVids()
+function searchEventListener(){
 document.querySelector("#searchForm").addEventListener("submit",(e)=>{
 
   e.preventDefault()
@@ -198,5 +280,39 @@ document.querySelector("#searchForm").addEventListener("submit",(e)=>{
   // searchParams["q"] = document.querySelector("#search").value
 
   searchVids(searchParams)
-
 })
+}
+//--------------------------------------------------
+
+
+function getUsers(){
+  fetch(endPoint+"users")
+    .then(res => res.json())
+    .then(data => {allApiUsers = data})
+}
+
+function postUser(user){
+  return fetch(endPoint+"users",{
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(user)
+  })
+    .then(res => res.json())
+    .then(userr => allApiUsers.push(userr))
+    .then(curUser => {currentUser = allApiUsers.slice(-1)[0]})
+}
+
+//pass in object with params that api will accept
+function postVideo(video){
+  // debugger
+  fetch(endPoint+"videos",{
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(video)
+  })
+    .then(res => res.json())
+    .then(newVid => {allApiVids.push(newVid)})
+    // .then(res => res.json())
+    // .then(data => console.log(data))
+
+}
