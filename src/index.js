@@ -7,11 +7,14 @@ allApiVids = []
 allApiUsers = []
 currentVid = ""
 currentUser = ""
+currentPvs = ""
+allApiPvs = ""
 
 const youTubeSearchUrl = "https://www.googleapis.com/youtube/v3/search/?"
 
 document.addEventListener("DOMContentLoaded",()=>{
   getUsers()
+  getPvs()
   document.querySelector("#searchForm").style.display = "none"
 // debugger
   validateOrCreateUser()
@@ -21,10 +24,12 @@ document.addEventListener("DOMContentLoaded",()=>{
   getVidsfromDatabase()
   searchEventListener()
   readyToAnalyze()
+  addToPlaylist()
+  removeFromPlaylist()
 })
 
 function validateOrCreateUser(){
-  document.querySelector("#userForm").addEventListener("submit",(e)=>{
+  document.querySelector("#userForm").addEventListener("submit",async (e)=>{
     e.preventDefault()
 
     let username = document.querySelector("#userIn").value
@@ -38,7 +43,7 @@ function validateOrCreateUser(){
 
     })
 
-    if (currentUser.name !== username){postUser({name: username}); currentUser = allApiUsers.slice(-1)[0]}
+    if (currentUser.name !== username){await postUser({name: username}); currentUser = allApiUsers.slice(-1)[0]}
 
     document.querySelector("#userForm").reset()
     document.querySelector("#userForm").style.display = "none"
@@ -48,11 +53,94 @@ function validateOrCreateUser(){
 
 }
 
+function removeFromPlaylist(){
+  document.addEventListener("click",(e)=>{
+
+    if (e.target.classList[0] === "Remove-from-playlist"){
+    videoId = e.target.parentElement.id
+
+    // let check = true
+    // allApiPvs.forEach((pv)=>{
+    //   if pv.video_id === videoId
+    // })
+    // debugger
+    allApiVids.forEach(async (vid)=>{
+// debugger
+      if(videoId === vid.youtubeId){
+        // debugger
+        if (vidAlreadyInPlaylist(vid)){
+          // debugger
+        await fetch(endPoint+`playlistvideos/${currentPvs.id}`,{
+          method: "DELETE",
+          //headers:{"Content-Type": "application/json"},
+          //body: JSON.stringify({playlist_id: currentUser.playlist_id, video_id: vid.id})
+        })
+          .then(rem => {
+            allApiPvs.forEach((pv) =>{
+              if (pv.id === currentPvs.id){
+                let ind = allApiPvs.indexOf(pv)
+                allApiPvs.splice(ind,1)
+              }
+            })
+          })
+        // .then(res => res.json())
+        // .then(newPv => {allApiPvs.push(newPv); getPvs()})
+        // .then(async (ap) => {return await getPvs()})
+      }
+        //post playlist
+      }
+    })
+  }
+  })
+  }
+
+function addToPlaylist(){
+  document.addEventListener("click",(e)=>{
+
+    if (e.target.classList[0] === "Add-to-playlist"){
+    videoId = e.target.parentElement.id
+
+    // let check = true
+    // allApiPvs.forEach((pv)=>{
+    //   if pv.video_id === videoId
+    // })
+
+    allApiVids.forEach(async (vid)=>{
+
+      if(videoId === vid.youtubeId){
+        // debugger
+        if (!vidAlreadyInPlaylist(vid)){
+          // debugger
+        await fetch(endPoint+"playlistvideos",{
+          method: "POST",
+          headers:{"Content-Type": "application/json"},
+          body: JSON.stringify({playlist_id: currentUser.playlist_id, video_id: vid.id})
+        })
+        .then(res => res.json())
+        .then(newPv => {allApiPvs.push(newPv); getPvs()})
+        // .then(async (ap) => {return await getPvs()})
+      }
+        //post playlist
+      }
+    })
+  }
+  })
+}
+
 function getVidsfromDatabase(){
   fetch(endPoint+"videos")
     .then(res => res.json())
     .then(vids => {
         allApiVids = vids
+    })
+
+}
+
+function getPvs(){
+  fetch(endPoint+"playlistvideos")
+    .then(res => res.json())
+    .then(pvs => {
+        allApiPvs = pvs
     })
 
 }
@@ -96,6 +184,14 @@ function vidAlreadyAnalyzed(vid){
   let check = false
   allApiVids.forEach((apiVid) => {
     if (vid.id.videoId === apiVid["youtubeId"]){ check = true; currentVid = apiVid}
+  })
+  return check
+}
+
+function vidAlreadyInPlaylist(vid){
+  let check = false
+  allApiPvs.forEach((apiPv) => {
+    if (vid.id === apiPv.video_id && apiPv.playlist_id === currentUser.playlist_id){currentPvs = apiPv; check = true}
   })
   return check
 }
@@ -188,16 +284,20 @@ function youtubeComments(vidToAnalyze){
       allWords = getCommentText(all).join(" ")
       allWords = allWords.replace("<","")
       allWords = allWords.replace("\n","")
-
+      allWords = allWords.replace("\r","")
+      allWords = allWords.replace("\t","")
+      allWords = allWords.replace("+","")
+      allWords = allWords.replace(/s/g,"")
+      allWords = allWords.replace("?","")
       allWords = allWords.substring(0,5000)
 
-      // allWords = allWords.split(" ")
-      // let wordTotal = wordCount(allWords)
-      // console.log(wordTotal)
-      //           //console.log(JSON.stringify(wordsInOrder))
-      //           //console.log(wordsInOrder)
-      //           //console.log(wordCount)
-      // allWords = allWords.join(" ")
+      allWords = allWords.split(" ")
+      let wordTotal = wordCount(allWords)
+      console.log(wordTotal)
+                //console.log(JSON.stringify(wordsInOrder))
+                //console.log(wordsInOrder)
+                //console.log(wordCount)
+      allWords = allWords.join(" ")
       // debugger
 
       return await analyze(allWords)
@@ -261,6 +361,7 @@ function analyze(words){
     .then(res => res.json())
     .then(result => {
       console.log(result)
+
       return result
     })
 }
