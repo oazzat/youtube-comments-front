@@ -1,5 +1,6 @@
 const endPoint = "http://localhost:3000/api/v1/"
-const KEY = "AIzaSyDhOR4z5ZCpdPtCAgZy-P3_T3B6DZ_FLCc"
+const ykey = config.YOUTUBE_KEY
+const skey = config.SENTIMENT_KEY
 const youtubeApiUrl = "https://www.googleapis.com/youtube/v3/commentThreads?"
 allVids = []
 results = {}
@@ -26,6 +27,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   readyToAnalyze()
   addToPlaylist()
   removeFromPlaylist()
+  removePlaylistVidFromDom()
 })
 
 function validateOrCreateUser(){
@@ -48,9 +50,83 @@ function validateOrCreateUser(){
     document.querySelector("#userForm").reset()
     document.querySelector("#userForm").style.display = "none"
     document.querySelector("#searchForm").style.display = "block"
+    document.querySelector("#playlist").style.display = "block"
+    displayPlaylist()
 
   })
 
+}
+
+function displayPlaylist(){
+  let playlist = currentUser.playlist_id
+  let vidsInPlaylist = []
+  let youId = []
+  let youTitle = []
+  let stuffToDisplay = []
+
+  allApiPvs.forEach(pv=>{
+    if (pv.playlist_id === playlist){
+      vidsInPlaylist.push(pv.video_id)
+      allApiVids.find((elem)=>{
+        if (elem.id === pv.video_id){
+        youId.push(elem.youtubeId)
+        youTitle.push(elem.title)
+        return elem.id === pv.video_id
+      }
+      })
+    }
+  })
+
+
+  youId.forEach((elem,ind)=>{
+    let link = `https://www.youtube.com/watch?v=${elem}`
+     //stuffToDisplay[link] = youTitle[ind]
+     newListItem(link,youTitle[ind])
+
+
+  })
+
+
+
+}
+
+function newListItem(link,title){
+  let newLi = document.createElement("li")
+  let removeToPlaylistButton = document.createElement("button")
+  removeToPlaylistButton.innerText = "Remove"
+  removeToPlaylistButton.className = "Remove-item"
+  newLi.innerHTML = `
+  <h5><a href="${link}">${title}</a></h5>
+  `
+  newLi.append(removeToPlaylistButton)
+  document.querySelector("#playlist-list").append(newLi)
+}
+
+function removePlaylistVidFromDom(){
+  document.addEventListener("click",(e)=>{
+    if (e.target.classList[0] === "Remove-item"){
+
+      if(Array.from(document.getElementsByTagName("iframe")) != []){
+        debugger
+      Array.from(document.getElementsByTagName("h2")).forEach((item)=>{
+
+        if (item.innerText === e.target.parentElement.firstElementChild.innerText){
+          item.parentElement.lastElementChild.click()
+        }
+      })
+    }
+    else{
+      allVids.forEach((vid)=>{
+        debugger
+        if(e.target.parentElement.firstElementChild.innerText === vid.snippet.title){
+          debugger
+        }
+      })
+    }
+
+      e.target.parentElement.remove()
+    }
+  })
 }
 
 function removeFromPlaylist(){
@@ -117,7 +193,11 @@ function addToPlaylist(){
           body: JSON.stringify({playlist_id: currentUser.playlist_id, video_id: vid.id})
         })
         .then(res => res.json())
-        .then(newPv => {allApiPvs.push(newPv); getPvs()})
+        .then(newPv => {
+          allApiPvs.push(newPv); getPvs()
+          let link = `https://www.youtube.com/watch?v=${vid.youtubeId}`
+          newListItem(link,vid.title)
+        })
         // .then(async (ap) => {return await getPvs()})
       }
         //post playlist
@@ -247,8 +327,8 @@ async function readyToAnalyze(){
 function attachAnalysis(e,analysis){
   let an = document.createElement('span')
   an.className = "analysis"
-  an.innerHTML = `<h4>RATING: ${analysis.type }</h4>
-                  <h4>RATING PERCENT: ${(analysis.ratio*100).toFixed(2)}%</h4>`
+  an.innerHTML = `<h4>Comments Analysis: ${analysis.type }</h4>
+                  <h4>Comments Rating: ${(analysis.ratio*100).toFixed(2)}%</h4>`
   e.target.parentElement.append(an)
   let addToPlaylistButton = document.createElement("button")
   addToPlaylistButton.innerText = "Add to My Playlist"
@@ -268,7 +348,7 @@ function youtubeComments(vidToAnalyze){
       maxResults: "100",
       order: "relevance",
       videoId: vidToAnalyze.id.videoId,
-      key: KEY,
+      key: ykey,
       pageToken: ""
     })
 
@@ -354,7 +434,7 @@ function getCommentText(allComments){
 function analyze(words){
   return fetch(`https://twinword-sentiment-analysis.p.mashape.com/analyze/?text=${words}`,{
     headers:{
-    "X-Mashape-Key": "FGuGAcw3MHmshd1CxYGiA6t3mTJCp1J2Jc6jsn36pobgltznT7",
+    "X-Mashape-Key": skey,
     "Accept": "application/json"
   }
   })
@@ -376,7 +456,7 @@ document.querySelector("#searchForm").addEventListener("submit",(e)=>{
       maxResults: "5",
       type: "video",
       q: document.querySelector("#search").value,
-      key: "AIzaSyCTgCQzg0tprf5v0y-AdnxtiaSUF14iY-M"
+      key: ykey
     })
   // searchParams["q"] = document.querySelector("#search").value
 
