@@ -1,3 +1,5 @@
+
+
 const endPoint = "http://localhost:3000/api/v1/"
 const ykey = config.YOUTUBE_KEY
 const skey = config.SENTIMENT_KEY
@@ -9,7 +11,7 @@ allApiUsers = []
 currentVid = ""
 currentUser = ""
 currentPvs = ""
-allApiPvs = ""
+allApiPvs  = ""
 
 const youTubeSearchUrl = "https://www.googleapis.com/youtube/v3/search/?"
 
@@ -18,7 +20,8 @@ document.addEventListener("DOMContentLoaded",()=>{
   getPvs()
   document.querySelector("#searchForm").style.display = "none"
 // debugger
-  validateOrCreateUser()
+  // validateOrCreateUser()
+  document.querySelector("#searchForm").style.display = "block"
     // document.querySelector("#submit-but").lastElementChild.value = "Log In"
     // document.querySelector(//get form)
 
@@ -107,7 +110,7 @@ function removePlaylistVidFromDom(){
     if (e.target.classList[0] === "Remove-item"){
 
       if(Array.from(document.getElementsByTagName("iframe")) != []){
-        debugger
+        // debugger
       Array.from(document.getElementsByTagName("h2")).forEach((item)=>{
 
         if (item.innerText === e.target.parentElement.firstElementChild.innerText){
@@ -246,16 +249,23 @@ function getPvs(){
 
 
 function displayVids(data){
+  let count = 1
     data.forEach((vid)=>{
       let newVid = document.createElement('div')
       let anButton = document.createElement('button')
+
       anButton.innerText = `analyze`
       anButton.className = "analyze-button"
+      newVid.className = `vid${count}`
+      // newVid.className = "vidStyle"
       newVid.id = vid.id.videoId
       newVid.innerHTML = `<h2>${vid.snippet.title}</h2>
-    <iframe class="video w100" width="640" height="360" src="https://www.youtube.com/embed/${vid.id.videoId}" frameborder="0" allowfullscreen></iframe>`
+    <iframe class="video w100" width="640" height="360" src="https://www.youtube.com/embed/${vid.id.videoId}" frameborder="0" allowfullscreen></iframe><br/>`
       newVid.append(anButton)
+
       document.querySelector("#results").append(newVid)
+
+      count += 1
     })
     // readyToAnalyze()
 }
@@ -328,17 +338,19 @@ function attachAnalysis(e,analysis){
   let an = document.createElement('span')
   an.className = "analysis"
   an.innerHTML = `<h4>Comments Analysis: ${analysis.type }</h4>
-                  <h4>Comments Rating: ${(analysis.ratio*100).toFixed(2)}%</h4>`
+                  <h4>Comments Rating: ${(analysis.ratio*100 + analysis.score*100).toFixed(2)}%</h4>`
   e.target.parentElement.append(an)
-  let addToPlaylistButton = document.createElement("button")
-  addToPlaylistButton.innerText = "Add to My Playlist"
-  addToPlaylistButton.className = "Add-to-playlist"
-  e.target.parentElement.append(addToPlaylistButton)
 
-  let removeToPlaylistButton = document.createElement("button")
-  removeToPlaylistButton.innerText = "Remove from My Playlist"
-  removeToPlaylistButton.className = "Remove-from-playlist"
-  e.target.parentElement.append(removeToPlaylistButton)
+  // PLAYLIST FEATURE BUTTONS TO ADD AND REMOVE
+  // let addToPlaylistButton = document.createElement("button")
+  // addToPlaylistButton.innerText = "Add to My Playlist"
+  // addToPlaylistButton.className = "Add-to-playlist"
+  // e.target.parentElement.append(addToPlaylistButton)
+  //
+  // let removeToPlaylistButton = document.createElement("button")
+  // removeToPlaylistButton.innerText = "Remove from My Playlist"
+  // removeToPlaylistButton.className = "Remove-from-playlist"
+  // e.target.parentElement.append(removeToPlaylistButton)
 }
 
 
@@ -356,12 +368,13 @@ function youtubeComments(vidToAnalyze){
   return fetch(`${youtubeApiUrl}${params}`)
     .then(res => res.json())
     .then(data => {
+      console.log("THE DATAAAAAA", data);
         allComments = [...Array.from(data.items)]
         return allComments
       })
     .then(async all => {
       let allWords = ''
-      allWords = getCommentText(all).join(" ")
+      allWords = getCommentText(all).join("")
       allWords = allWords.replace("<","")
       allWords = allWords.replace("\n","")
       allWords = allWords.replace("\r","")
@@ -371,13 +384,15 @@ function youtubeComments(vidToAnalyze){
       allWords = allWords.replace("?","")
       allWords = allWords.substring(0,5000)
 
-      allWords = allWords.split(" ")
-      let wordTotal = wordCount(allWords)
-      console.log(wordTotal)
+      let newWords = allWords.split(" ")
+      console.log("NEW WORDS", newWords);
+      // allWords = allWords.split(" ")
+      let wordTotal = wordCount(newWords)
+      console.log("WORD TOTAL", wordTotal)
                 //console.log(JSON.stringify(wordsInOrder))
                 //console.log(wordsInOrder)
                 //console.log(wordCount)
-      allWords = allWords.join(" ")
+      // allWords = allWords.join(" ")
       // debugger
 
       return await analyze(allWords)
@@ -432,6 +447,7 @@ function getCommentText(allComments){
 
 
 function analyze(words){
+  console.log("WORDS TO SEND", words);
   return fetch(`https://twinword-sentiment-analysis.p.mashape.com/analyze/?text=${words}`,{
     headers:{
     "X-Mashape-Key": skey,

@@ -1,0 +1,41 @@
+.test {
+  font-size: 50px;
+}
+
+.top {
+  /* background-image: url("https://marketingland.com/wp-content/ml-loads/2017/04/youtube-crowd-uproar-protest-ss-19201920-800x450.jpg"); */
+  /* background-image: url("https://i.gadgets360cdn.com/large/youtube_music_main_1526717969559.jpg"); */
+  /* background-position: 50% 55% ; */
+
+}
+
+body {
+  /* background-image: url("https://kedoo.com/youtube/docs/https---blueprint-api-production.s3.amazonaws.com-uploads-card-image-835061-474d91c6-335e-4bee-8f9c-efdaea3e18d3.jpg"); */
+  background-image: url("https://thestonedsociety.com/wp-content/uploads/2014/10/youtube4.png");
+  background-position: 50% 0% ;
+}
+
+.vidStyle{
+  display: flex;
+}
+
+.vid1{
+  /* display: inline-block; */
+  background-color: rgba(0, 200, 255, 0.6);
+}
+
+.vid2{
+  background-color: rgba(255, 255, 0, 0.6);
+}
+
+.vid3{
+  background-color: rgba(0, 255, 0, 0.6);
+}
+
+.vid4{
+  background-color: rgba(0, 0, 255, 0.6);
+}
+
+.vid5{
+  background-color: rgba(50, 100, 150, 0.6);
+}
