@@ -370,9 +370,9 @@ function attachAnalysis(e,analysis){
   let color = 'rgb(180,180,180,.8)'
   if (type === 'Negative'){color = 'rgb(255,0,0,.5)'}
   if (type === 'Positive'){color = 'rgb(0,255,0,.5)'}
-  an.innerHTML = `<p>Comments Analysis: <br><span style='color: black; font-size: 30px; font-weight: bold;'>${type}</span></p><br>
-                  <p>Comments Rating: <br><span style='color: black; font-size: 30px; font-weight: bold;'>${total}%</span></p><br>
-                  <p>Comments keywords: </p>
+  an.innerHTML = `<p>Comments Sentiment Analysis: <br><span style='color: black; font-size: 30px; font-weight: bold;'>${type}</span></p><br>
+                  <p>Comments Sentiment Rating: <br><span style='color: black; font-size: 30px; font-weight: bold;'>${total}%</span></p><br>
+                  <p>Comments Keywords: </p>
                   <table cellspacing='10' >
                     <tr>
 
