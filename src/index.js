@@ -233,6 +233,8 @@ function getPvs(){
     fetch(`${youTubeSearchUrl}${searchParams}`)
       .then(res => res.json())
       .then(data => {
+        // debugger
+        // Next page token can be found here
         displayVids(data.items)
         addVids(data.items)
       })
@@ -253,15 +255,18 @@ function displayVids(data){
     data.forEach((vid)=>{
       let newVid = document.createElement('div')
       let anButton = document.createElement('button')
+      let p = document.createElement('p')
+      p.innerHTML = `<br/>`
 
       anButton.innerText = `analyze`
       anButton.className = "analyze-button"
-      newVid.className = `vid${count}`
+      newVid.className = `vid1`
       // newVid.className = "vidStyle"
       newVid.id = vid.id.videoId
-      newVid.innerHTML = `<h2>${vid.snippet.title}</h2>
-    <iframe class="video w100" width="640" height="360" src="https://www.youtube.com/embed/${vid.id.videoId}" frameborder="0" allowfullscreen></iframe><br/>`
+      newVid.innerHTML = `<div><h2>${vid.snippet.title}</h2>
+    <iframe class="video w100" width="640" height="360" src="https://www.youtube.com/embed/${vid.id.videoId}" frameborder="0" allowfullscreen></iframe><br/><br/></div>`
       newVid.append(anButton)
+      newVid.append(p)
 
       document.querySelector("#results").append(newVid)
 
@@ -291,6 +296,8 @@ async function readyToAnalyze(){
     document.addEventListener("click", (e)=>{
 
     if (e.target.classList[0] === "analyze-button"){
+    // e.target.parentElement.className = 'currentVid'
+    // e.target.style.display = "none"
     vidId = e.target.parentElement.id
     allVids.forEach(async (vid)=>{
       // debugger
@@ -317,7 +324,9 @@ async function readyToAnalyze(){
         // attachAnalysis(e,analysis)
       }
       else{
-        analysis = {type: currentVid.typee,ratio: currentVid.ratio }
+        analysis = {type: currentVid.typee,ratio: currentVid.ratio, score: currentVid.score, keywords: currentVid.keywords }
+        e.target.parentElement.className = 'currentVid'
+        e.target.style.display = "none"
         // debugger
 
       }
@@ -335,11 +344,71 @@ async function readyToAnalyze(){
 }
 
 function attachAnalysis(e,analysis){
+  // debugger
+  let total = (analysis.ratio*100 + analysis.score*100).toFixed(2)
+  let type = 'Neutral'
+  if (total < -10){type = "Negative"}
+  if (total > 10){type = "Positive"}
+  let words = []
+  // debugger
+
+    // debugger
+    let wordArr =''
+    if (type === "Negative"){
+      // debugger
+      wordArr = analysis.keywords.split(',').reverse().join(',').replace(/,/g,'<br>')
+    }
+    else{
+      wordArr = analysis.keywords.replace(/,/g,'<br>')
+    }
+  // wordArr.forEach(word =>{
+  //   words.push(`${word}<br>`)
+  // })
   let an = document.createElement('span')
+  // debugger
   an.className = "analysis"
-  an.innerHTML = `<h4>Comments Analysis: ${analysis.type }</h4>
-                  <h4>Comments Rating: ${(analysis.ratio*100 + analysis.score*100).toFixed(2)}%</h4>`
+  let color = 'rgb(180,180,180,.8)'
+  if (type === 'Negative'){color = 'rgb(255,0,0,.5)'}
+  if (type === 'Positive'){color = 'rgb(0,255,0,.5)'}
+  an.innerHTML = `<p>Comments Analysis: <br><span style='color: black; font-size: 30px; font-weight: bold;'>${type}</span></p><br>
+                  <p>Comments Rating: <br><span style='color: black; font-size: 30px; font-weight: bold;'>${total}%</span></p><br>
+                  <p>Comments keywords: </p>
+                  <table cellspacing='10' >
+                    <tr>
+
+                    </tr>
+                  </table>
+                  `
+
+  if (type === "Negative"){
+
+  analysis.keywords.split(',').reverse().forEach((word,ind)=>{
+    if (ind%4===0){
+      let tr = document.createElement('tr')
+      an.querySelector('table').append(tr)
+    }
+    let el = document.createElement('td')
+    el.innerHTML = word
+    // debugger
+    an.querySelectorAll('tr')[an.querySelectorAll('tr').length-1].append(el)
+  })
+  }
+  else{
+    analysis.keywords.split(',').forEach((word,ind)=>{
+      if (ind%4===0){
+        let tr = document.createElement('tr')
+        an.querySelector('table').append(tr)
+      }
+      let el = document.createElement('td')
+      el.innerHTML = word
+      // debugger
+      an.querySelectorAll('tr')[an.querySelectorAll('tr').length-1].append(el)
+    })
+  }
   e.target.parentElement.append(an)
+  // debugger
+  // e.target.parentElement.querySelector(".analysis").style.background = color
+  e.target.parentElement.style.background = color
 
   // PLAYLIST FEATURE BUTTONS TO ADD AND REMOVE
   // let addToPlaylistButton = document.createElement("button")
@@ -469,7 +538,7 @@ document.querySelector("#searchForm").addEventListener("submit",(e)=>{
   document.querySelector("#results").innerHTML= ""
   const searchParams = new URLSearchParams({
       part: "snippet",
-      maxResults: "5",
+      maxResults: "10",
       type: "video",
       q: document.querySelector("#search").value,
       key: ykey

@@ -11,8 +11,75 @@
 
 body {
   /* background-image: url("https://kedoo.com/youtube/docs/https---blueprint-api-production.s3.amazonaws.com-uploads-card-image-835061-474d91c6-335e-4bee-8f9c-efdaea3e18d3.jpg"); */
-  background-image: url("https://thestonedsociety.com/wp-content/uploads/2014/10/youtube4.png");
-  background-position: 50% 0% ;
+  /* background-image: url("https://thestonedsociety.com/wp-content/uploads/2014/10/youtube4.png"); */
+  background-image: url("https://cdn.cnn.com/cnnnext/dam/assets/161213135658-05-kids-on-cell-phones-health-shutterstock-316845479-super-tease.jpg");
+  background-position: 50% -25% ;
+  background-size: cover;
+  /* background-position: a; */
+  /* background-position: fixed; */
+}
+
+#search{
+  /* display: flex; */
+  margin: auto;
+  /* margin-top: 30px; */
+  color: #fff;
+  background-color: rgb(255,124,124,.5);
+  width: 50%;
+    height: 80px;
+    font-size: 60px;
+    line-height: 1;
+    border-radius: 5px;
+    box-shadow: 0 10px 40px #ff7c7c, 0 0 0 10px
+}
+
+#circle{
+  /* display: flex; */
+  position: relative;
+    top: -8px;
+    left: 0;
+    width: 43px;
+    height: 43px;
+    margin-top: 0;
+    border-width: 15px;
+    border: 15px solid #fff;
+    background-color: transparent;
+    border-radius: 50%;
+    transition: 0.5s ease all;
+}
+
+#cle{
+  position: relative;
+  top: -5px;
+  left: 43px;
+  display: block;
+  width: 45px;
+  height: 15px;
+  background-color: white;
+  border-radius: 10px;
+  transform: rotateZ(52deg);
+  transition: 0.5s ease all;
+}
+
+#but{
+  background-color: rgb(255,124,124,.5); /* Green */
+  /* position: absolute; */
+  border: none;
+  height: 60px;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  text-decoration: none;
+  /* display: inline-block; */
+  font-size: 16px;
+  /* margin: 4px 2px; */
+  margin-left: 20px;
+  /* margin-bottom: 100px; */
+  margin-top: 50px;
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px #ff7c7c, 0 0 0 5px
+  /* cursor: pointer; */
 }
 
 .vidStyle{
@@ -21,7 +88,12 @@ body {
 
 .vid1{
   /* display: inline-block; */
-  background-color: rgba(0, 200, 255, 0.6);
+  /* background-color: rgba(0, 200, 255, 0.5); */
+  background-color: rgba(80, 80, 80, 0.55);
+  color: white;
+  padding-top: 5px;
+  /* padding-bottom: 10px; */
+  margin-bottom: 50px;
 }
 
 .vid2{
@@ -38,4 +110,38 @@ body {
 
 .vid5{
   background-color: rgba(50, 100, 150, 0.6);
+}
+
+.currentVid{
+  display: flex;
+  justify-content: space-between;
+  padding-left: 20px;
+  padding-right: 20px;
+  /* width: 50%; */
+  background-color: rgba(80, 80, 80, 0.55);
+  color: white;
+  padding-top: 5px;
+  /* padding-bottom: 10px; */
+  margin-bottom: 50px;
+  padding-left:  80px;
+}
+
+.analysis{
+  width: 350px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-right: 75px;
+  /* margin-left: 20px; */
+
+}
+
+td{
+  border: 1px solid white;
+  padding: 10px;
+  margin: 10px;
+  /* margin-right: 10px; */
+}
+
+table{
+  margin: auto;
 }
